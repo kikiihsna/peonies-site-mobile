@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:peonies_site/widgets/left_drawer.dart';
+import 'package:peonies_site/widgets/product_card.dart'; 
+
+
 
 class MyHomePage extends StatelessWidget {
   final String npm = '2306213376'; // NPM
@@ -6,9 +10,9 @@ class MyHomePage extends StatelessWidget {
   final String className = 'PBP B'; // Kelas
 
   final List<ItemHomepage> items = [
-    ItemHomepage("Lihat Daftar Produk", Icons.shopping_cart_checkout,
+    ItemHomepage("View Your Flower Collection", Icons.shopping_cart_checkout,
         Colors.pink.shade200),
-    ItemHomepage("Tambah Produk", Icons.add_box, Colors.green.shade200),
+    ItemHomepage("Add New Flower", Icons.add_box, Colors.green.shade200),
     ItemHomepage("Logout", Icons.logout, Colors.blue.shade200),
   ];
 
@@ -19,9 +23,11 @@ class MyHomePage extends StatelessWidget {
     return Scaffold(
       // AppBar adalah bagian atas halaman yang menampilkan judul.
       appBar: AppBar(
+        // Mengganti warna icon drawer menjadi putih
+        iconTheme: const IconThemeData(color: Colors.white),
         // Judul aplikasi "Peonies Site" dengan teks putih dan tebal.
         title: const Text(
-          'Peonies Site - Beautiful flower for every moment',
+          'Peonies Site',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -30,6 +36,7 @@ class MyHomePage extends StatelessWidget {
         // Warna latar belakang AppBar diambil dari skema warna tema aplikasi.
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
+      drawer: const LeftDrawer(),
       // Body halaman dengan padding di sekelilingnya.
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -127,62 +134,3 @@ class InfoCard extends StatelessWidget {
   }
 }
 
-class ItemHomepage {
-  final String name;
-  final IconData icon;
-  final Color color; // Tambahkan properti color
-
-  ItemHomepage(this.name, this.icon, this.color);
-}
-
-class ItemCard extends StatelessWidget {
-  // Menampilkan kartu dengan ikon dan nama.
-
-  final ItemHomepage item;
-
-  const ItemCard(this.item, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      // Menentukan warna latar belakang dari tema aplikasi.
-      color: item.color,
-      // Membuat sudut kartu melengkung.
-      borderRadius: BorderRadius.circular(12),
-
-      child: InkWell(
-        // Aksi ketika kartu ditekan.
-        onTap: () {
-          // Menampilkan pesan SnackBar saat kartu ditekan.
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(SnackBar(
-                content: Text("Kamu telah menekan tombol ${item.name}!")));
-        },
-        // Container untuk menyimpan Icon dan Text
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          child: Center(
-            child: Column(
-              // Menyusun ikon dan teks di tengah kartu.
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  item.icon,
-                  color: Colors.white,
-                  size: 30.0,
-                ),
-                const Padding(padding: EdgeInsets.all(3)),
-                Text(
-                  item.name,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:peonies_site/menu.dart';
+import 'package:peonies_site/screens/menu.dart';
 
 void main() {
   runApp(const MyApp());
