@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:peonies_site/widgets/left_drawer.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
+import 'dart:convert'; 
+import 'package:peonies_site/screens/menu.dart';
+
 
 class ProductEntryFormPage extends StatefulWidget {
   const ProductEntryFormPage({super.key});
@@ -10,7 +15,7 @@ class ProductEntryFormPage extends StatefulWidget {
 
 class _ProductEntryFormPageState extends State<ProductEntryFormPage> {
   final _formKey = GlobalKey<FormState>();
-  String _itemName = "";
+  String _name = "";
   double _price = 0.0;
   String _description = "";
   String _bouquet = "Single"; // Default value for bouquetType
@@ -20,6 +25,8 @@ class _ProductEntryFormPageState extends State<ProductEntryFormPage> {
   
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+
     return Scaffold(
       appBar: AppBar(
         title: const Center(
@@ -50,7 +57,7 @@ class _ProductEntryFormPageState extends State<ProductEntryFormPage> {
                         ),
                         onChanged: (String? value) {
                           setState(() {
-                            _itemName = value!;
+                            _name = value!;
                           });
                         },
                         validator: (String? value) {
@@ -165,40 +172,41 @@ class _ProductEntryFormPageState extends State<ProductEntryFormPage> {
                         padding: const EdgeInsets.all(8.0),
                         child: ElevatedButton(
                           style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all(
+                            backgroundColor: WidgetStateProperty.all(
                                 Theme.of(context).colorScheme.primary),
                           ),
-                          onPressed: () {
+                          onPressed: () async {
                             if (_formKey.currentState!.validate()) {
-                              showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    title: const Text('Item Product successfully saved'),
-                                    content: SingleChildScrollView(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text('Item Name: $_itemName'),
-                                          Text('Desription: $_description'),
-                                          Text('Price: $_price'),
-                                          Text('Bouquet Type: $_bouquet'),
-                                          Text('Wrap Color: $_wrapColor'),
-                                        ],
-                                      ),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        child: const Text('OK'),
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                          _formKey.currentState!.reset();
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                },
+                              // Kirim ke Django dan tunggu respons
+                              final response = await request.postJson(
+                                  "http://localhost:8000/create-flutter/",
+                                  jsonEncode(<String, String>{
+                                    'name': _name,
+                                    'price': _price.toString(),
+                                    'description': _description,
+                                    'bouquet_type': _bouquet,
+                                    'wrap_color': _wrapColor,
+                                  }),
                               );
+                              if (context.mounted) {
+                                  if (response['status'] == 'success') {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(const SnackBar(
+                                          content: 
+                                              Text("New product has been successfully saved!"),
+                                      ));
+                                      Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(builder: (context) => MyHomePage()),
+                                      );
+                                  } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(const SnackBar(
+                                          content:
+                                              Text("An error occurred, please try again."),
+                                      ));
+                                  }
+                              }
                             }
                           },
                           child: const Text(

@@ -4,6 +4,8 @@ Welcome to Peonies Site, your one-stop shop for fresh, beautiful flowers!
 ## Daftar Tugas:
 - **[Tugas 7](#tugas-7)**<br>
 - **[Tugas 8](#tugas-8)**<br>
+- **[Tugas 9](#tugas-9)**<br>
+
 
 
 ## Tugas 7
@@ -185,3 +187,167 @@ onPressed: () {
     _formKey.currentState!.reset();
 },
 ```
+
+## Tugas 9
+### 1. Jelaskan mengapa kita perlu membuat model untuk melakukan pengambilan ataupun pengiriman data JSON? Apakah akan terjadi error jika kita tidak membuat model terlebih dahulu?
+Model diperlukan untuk mempermudah pengelolaan dan manipulasi data JSON yang diterima atau dikirimkan oleh aplikasi. Dengan menggunakan model kita bisa:
+- **Memastikan Validasi Data**: Dengan adanya model, aplikasi bisa memverifikasi bahwa data JSON sesuai dengan struktur yang diharapkan, sehingga mengurangi potensi timbulnya error.
+- **Konversi Otomatis**: Model dapat secara otomatis mengubah data JSON menjadi objek Dart (di Flutter) atau objek Python (di Django) untuk mempermudah pengolahan data.
+- **Kemudahan Pengembangan**: Dengan model kita juga dapat mengakses properti data secara langsung daripada menggunakan indeks atau key manual.
+
+**Apakah Akan Terjadi Error Jika Tidak Membuat Model?**
+Jawabannya tidak selalu. Namun, tanpa membuat model, kita harus menangani parsing data JSON secara manual, karena possible rentan terhadap hal hal berikut:
+- **Kesalahan Parsing**: Misalnya, jika key JSON berubah, maka aplikasi akan gagal memproses data.
+- **Kesalahan Validasi**: Data yang tidak valid dapat diterima tanpa disadari, mengakibatkan error saat aplikasi mencoba menggunakannya.
+
+### 2. Jelaskan fungsi dari library http yang sudah kamu implementasikan pada tugas ini
+Secara umum, library `http` digunakan untuk:
+1. **Mengirim Permintaan HTTP**: Seperti `GET`, `POST`, `PUT`, dan `DELETE`.
+2. **Mengelola Header dan Body**: Termasuk mengirim data JSON dan menerima respons dari server.
+3. **Mendukung API Interaksi**: Mempermudah komunikasi antara Flutter dan Django.
+
+Pada tugas 9 ini, library `http` membantu menghubungkan aplikasi Flutter dengan API Django, seperti untuk login, register, pengambilan produk, dan menambahkan data produk.
+
+**Berikut beberapa implementasi yang saya lakukan**
+1. GET (mengambil data produk yang ada di Django)
+```dart
+Future<List<ProductEntry>> fetchProduct(CookieRequest request) async {
+    final response = await request.get('http://localhost:8000/json-by-user/');
+    
+    var data = response;
+    
+    List<ProductEntry> listProduct = [];
+    for (var d in data) {
+      if (d != null) {
+        listProduct.add(ProductEntry.fromJson(d));
+      }
+    }
+    return listProduct;
+  }
+```
+
+2. POST (menambahkan produk baru ke server)
+```dart
+final response = await request.postJson(
+  "http://localhost:8000/create-flutter/",
+    jsonEncode(<String, String>{
+        'name': _name,
+        'price': _price.toString(),
+        'description': _description,
+        'bouquet_type': _bouquet,
+        'wrap_color': _wrapColor,
+    }),
+);
+```
+
+### 3. Jelaskan fungsi dari CookieRequest dan jelaskan mengapa instance CookieRequest perlu untuk dibagikan ke semua komponen di aplikasi Flutter.
+`CookieRequest` adalah sebuah library untuk menangani sesi autentikasi di Flutter dengan cookie. Berikut fungsi utamanya:
+1. **Menyimpan Status Login**: `CookieRequest` menyimpan cookie yang digunakan untuk autentikasi, memastikan pengguna tetap login meskipun aplikasi berpindah halaman.
+2. **Mengelola Permintaan dengan Autentikasi**: Setiap permintaan yang membutuhkan otorisasi akan otomatis menggunakan cookie.
+3. **Menghapus Cookie pada Logout**: Saat logout, cookie akan dihapus untuk memastikan keamanan sesi.
+
+**Lalu, mengapa instance `CookieRequest` dibagikan ke seluruh komponen?**
+`CookieRequest` perlu dibagikan agar setiap komponen aplikasi Flutter dapat mengakses status login pengguna dan mengirimkan cookie ke API Django. Dengan cara ini, autentikasi pengguna tetap konsisten di seluruh aplikasi.
+
+### 4. Jelaskan mekanisme pengiriman data mulai dari input hingga dapat ditampilkan pada Flutter.
+Berikut setiap bagian dari mekanisme pengiriman data yang saya terapkan:
+1. **Input Data**:
+   - User memasukkan data melalui form di Flutter.
+   - Form memvalidasi input (seperti nama produk, harga, etc).
+2. **Pengiriman Data ke API**:
+   - Data yang valid dikirim dalam format JSON menggunakan `http.post` atau `request.postJson`.
+3. **Pemrosesan Data di Django**:
+   - Django menerima data, memvalidasinya, dan menyimpannya ke database.
+   - Django mengirim respons JSON ke Flutter (berhasil atau gagal).
+4. **Menampilkan Data di Flutter**:
+   - Flutter menerima respons dari Django.
+   - Jika berhasil, data ditampilkan melalui widget yang sesuai.
+
+### 5. Jelaskan mekanisme autentikasi dari login, register, hingga logout. Mulai dari input data akun pada Flutter ke Django hingga selesainya proses autentikasi oleh Django dan tampilnya menu pada Flutter.
+Berikut setiap bagian dari mekanisme yang ada:
+**Login**
+1. **Input Data**: User memasukkan username dan password di Flutter.
+2. **Pengiriman ke Django**:
+   - Flutter mengirim data menggunakan `request.postJson`.
+   - Django memeriksa username dan password, lalu membuat cookie jika valid.
+3. **Respons ke Flutter**:
+   - Django mengirimkan status login dan cookie.
+   - `CookieRequest` menyimpan cookie tersebut.
+4. **Navigasi**:
+   - Jika login berhasil, user diarahkan ke main page.
+
+### **Register**
+1. **Input Data**: User memasukkan data akun baru di Flutter.
+2. **Pengiriman ke Django**:
+   - Data dikirim dalam format JSON menggunakan `request.postJson`.
+   - Django memvalidasi data dan menyimpan akun baru ke database.
+3. **Respons ke Flutter**:
+   - Django mengirimkan status (berhasil atau gagal).
+   - Flutter menampilkan pesan sesuai status.
+
+### **Logout**
+1. **Permintaan Logout**:
+   - Flutter mengirim permintaan logout ke Django.
+   - Django menghapus cookie dari sesi user.
+2. **Penghapusan Cookie di Flutter**:
+   - `CookieRequest` juga menghapus cookie lokal.
+3. **Navigasi**:
+   - User diarahkan kembali ke halaman login.
+
+### 6. Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step! (bukan hanya sekadar mengikuti tutorial).
+**Setup Django API**
+1. Pertama saya menjalankan perintah `startapp authentication` dengan `python3 manage.py startapp authentication` dan menambahkan `authentication` ke `INSTALLED_APPS` yang ada di `settings.py`. 
+2. Kemudian saya juga install library `django-cors-headers` dan menambahkannya ke `INSTALLED_APPS` dan `requirements`.
+3. Lalu, pada views.py di app authentication yang baru dibuat tadi, saya menambahkan function untuk login, register, dan logout yang nantinya akan dipanggil pada program Flutter.
+4. Tidak lupa untuk selalu update urls.py untuk menambahkan path menuju function-function terkait.
+5. Untuk kebutuhan flutter tepatnya pada root Flutter, saya juga menginstall `package provider` dan `pbp_django_auth` yang sudah disediakan dan menyesuaikan widget-widget yang sudah ada sebelumnya.
+implement login, register
+
+Tahap setup intinya untuk mengintegrasikan django dengan flutter dan menambahkan fitur registrasi dan login di Flutter.
+
+**Implementasi Login dan Register**
+6. Dimulai dengan membuat file baru yaitu `login.dart` pada folder `screens`
+7. Lalu menyesuaikan widget awal yang ditampilkan oleh Flutter pada main.dart yang awalnya seperti ini:
+``` dart
+return MaterialApp(
+      ...
+      home: MyHomePage(),
+    );
+```
+
+diubah menjadi seperti ini
+
+```dart
+return MaterialApp(
+      ...
+      home: const LoginPage(),
+    );
+```
+
+3. Untuk fitur register, kurang lebih mirip seperti login, pertama saya membuat `register.dart` dan menambahkan button untuk menghubungkan page register dan login
+
+**Membuat Model Custom**
+8. Pada tahap ini saya membuat model yang menyesuaikan dengan endpoint JSON ProductEntry website Django, tahap ini saya sepenuhnya mengimplementasikan tahapan tutorial, yaitu dengan memanfaatkan web Quicktype untuk membantu membuat model yang sesuai. 
+9. Tahap 8 dilakukan dengan menjalankan aplikasi django, lalu mengambil data json didalamnya.
+10. Kemudian hasil code yang didapat dari Quicktype saya paste pada `lib/models/product_entry.dart` di program Flutter
+
+**Membuat Page List Product yang terdaftar**
+11. Untuk menampilkan product yang terdapat di endpoint JSON, pertama saya membuat `list_productentry.dart` pada folder screens dan import package-package yang dibutuhkan
+12. Sebagai catatan, pada page ini, masing-masing produk hanya menampilkan overview produk yaitu meliputi; nama, harga, dan description
+13. Supaya dapat mengakses list produk (Collection Flower) ini dari side bar dan home page, saya juga menambahkan pilihan view collection pada `left_drawer.dart` (side bar) dan `product_card.dart` (home page)
+
+**Membuat Page Product Detail**
+14. Selanjutnya adalah membuat page untuk melihat detail dari setiap product yang ada (bukan lagi hanya name, price, dan description),
+15. Pertama saya membuat `product_detail.dart` pada folder `screens`, page ini akan menampilkan semua atribut yang dimiliki oleh product peonies site dan button untuk kembali ke collection list.
+16. Lalu saya sedikit mengubah bagian list collection agar card yang ditampilkan dapat diclick untuk mengarahkan ke page detail dengan menggunakan 
+``` dart
+builder: (context) => DetailItemPage
+```
+
+**Melakukan Filter pada Page Product List/Collection**
+17. Untuk filter produk sesuai user yang sedang log in, saya menambahkan function `get_user_goods_json` pada views.py di aplikasi main Django dan melakukan routing di urls.py (json-by-user).
+18. Dan untuk di Flutter tepatnya di `list_productsentry.dart` saya juga mengubah response menjadi 
+```dart
+final response = await request.get('http://localhost:8000/json-by-user/');, 
+```
+dengan ini product yang ditampilkan hanya product yang sesuai dengan user yang sedang log in.

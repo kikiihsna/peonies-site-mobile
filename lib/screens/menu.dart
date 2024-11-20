@@ -6,14 +6,14 @@ import 'package:peonies_site/widgets/product_card.dart';
 
 class MyHomePage extends StatelessWidget {
   final String npm = '2306213376'; // NPM
-  final String name = 'Rizki Amani Hasanah'; // Nama
+  final String name = 'Rizki Amani'; // Nama
   final String className = 'PBP B'; // Kelas
 
   final List<ItemHomepage> items = [
     ItemHomepage("View Your Flower Collection", Icons.shopping_cart_checkout,
-        Colors.pink.shade200),
-    ItemHomepage("Add New Flower", Icons.add_box, Colors.green.shade200),
-    ItemHomepage("Logout", Icons.logout, Colors.blue.shade200),
+        Colors.pink.shade300),
+    ItemHomepage("Add New Flower", Icons.add_box, Colors.pink.shade200),
+    ItemHomepage("Logout", Icons.logout, Colors.pink.shade100),
   ];
 
   MyHomePage({super.key});
